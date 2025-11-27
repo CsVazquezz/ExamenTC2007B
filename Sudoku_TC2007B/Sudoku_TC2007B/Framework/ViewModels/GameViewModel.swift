@@ -23,6 +23,13 @@ public class GameViewModel: ObservableObject {
     @Published public var board: SudokuBoard? = nil
     @Published public var selectedCellID: UUID? = nil
 
+    // Persistence / saving state
+    @Published public var isSaving: Bool = false
+    @Published public var saveMessage: String? = nil
+
+    @Published public var isLoadingSaved: Bool = false
+    @Published public var loadMessage: String? = nil
+
     private let repository: SudokuRepositoryProtocol
     private let validator: SudokuValidatorProtocol
 
@@ -61,6 +68,53 @@ public class GameViewModel: ObservableObject {
         let newBoard = currentBoard.update(cell: selectedCell, newValue: newValue)
         self.board = newBoard
         self.state = .success(newBoard)
+    }
+
+    // Save current board to storage. id is an arbitrary key (e.g., "last_game" or a UUID)
+    public func saveCurrentGame(id: String = "last_game") async {
+        guard let currentBoard = board else {
+            saveMessage = "No board to save"
+            return
+        }
+
+        isSaving = true
+        saveMessage = nil
+        do {
+            // ensure difficulty preserved
+            var toSave = currentBoard
+            if toSave.difficulty == nil || toSave.difficulty?.isEmpty == true {
+                toSave.difficulty = "unknown"
+            }
+            try await repository.saveGame(id: id, board: toSave)
+            saveMessage = "Saved"
+        } catch {
+            saveMessage = error.localizedDescription
+        }
+        isSaving = false
+    }
+
+    // Load a saved game by id. Returns true if loaded successfully.
+    @discardableResult
+    public func loadSavedGame(id: String = "last_game") async -> Bool {
+        isLoadingSaved = true
+        loadMessage = nil
+        do {
+            if let loaded = try await repository.loadGame(id: id) {
+                self.board = loaded
+                self.state = .success(loaded)
+                isLoadingSaved = false
+                return true
+            } else {
+                loadMessage = "No saved game found"
+                isLoadingSaved = false
+                return false
+            }
+        } catch {
+            loadMessage = error.localizedDescription
+            self.state = .error(error)
+            isLoadingSaved = false
+            return false
+        }
     }
 
     public func verify(board: SudokuBoard) async {

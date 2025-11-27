@@ -14,6 +14,12 @@ public final class SudokuRepository: SudokuRepositoryProtocol {
     private let apiService: SudokuAPIServiceProtocol
     private let storageService: GameStorageServiceProtocol
 
+    struct SavedGameDTO: Codable {
+        let board: SudokuBoard
+        let difficulty: String?
+        let savedAt: Date
+    }
+
     public init(apiService: SudokuAPIServiceProtocol, storageService: GameStorageServiceProtocol) {
         self.apiService = apiService
         self.storageService = storageService
@@ -62,17 +68,22 @@ public final class SudokuRepository: SudokuRepositoryProtocol {
             }
         }
 
-        let board = SudokuBoard(size: size, cells: cells)
+        let board = SudokuBoard(size: size, cells: cells, difficulty: difficulty)
         return board
     }
 
     public func saveGame(id: String, board: SudokuBoard) async throws {
-        // TODO: encode board and save via storageService
-        throw NSError(domain: "SudokuRepository", code: -1, userInfo: [NSLocalizedDescriptionKey: "Not implemented"])
+        let dto = SavedGameDTO(board: board, difficulty: board.difficulty, savedAt: Date())
+        let data = try JSONEncoder().encode(dto)
+        try await storageService.saveGame(id: id, boardData: data)
     }
 
     public func loadGame(id: String) async throws -> SudokuBoard? {
-        // TODO: load data and decode to SudokuBoard
-        throw NSError(domain: "SudokuRepository", code: -1, userInfo: [NSLocalizedDescriptionKey: "Not implemented"])
+        guard let data = try await storageService.loadGame(id: id) else { return nil }
+        let dto = try JSONDecoder().decode(SavedGameDTO.self, from: data)
+        // Ensure board contains difficulty
+        var board = dto.board
+        board.difficulty = dto.difficulty
+        return board
     }
 }

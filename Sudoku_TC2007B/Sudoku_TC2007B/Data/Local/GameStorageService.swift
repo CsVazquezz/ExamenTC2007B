@@ -24,21 +24,39 @@ public final class GameStorageService: GameStorageServiceProtocol {
         } else {
             self.folderURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("SudokuGames")
         }
-        // TODO: create folder if needed
+        // create folder if needed
+        if !fileManager.fileExists(atPath: self.folderURL.path) {
+            do {
+                try fileManager.createDirectory(at: self.folderURL, withIntermediateDirectories: true, attributes: nil)
+            } catch {
+                // ignore creation error here; operations will throw if needed
+            }
+        }
     }
 
     public func saveGame(id: String, boardData: Data) async throws {
-        // TODO: Implement saving logic
-        throw NSError(domain: "GameStorageService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Not implemented"])
+        let fileURL = folderURL.appendingPathComponent("\(id).json")
+        try await Task.detached(priority: .utility) {
+            try boardData.write(to: fileURL, options: .atomic)
+        }.value
     }
 
     public func loadGame(id: String) async throws -> Data? {
-        // TODO: Implement loading logic
-        throw NSError(domain: "GameStorageService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Not implemented"])
+        let fileURL = folderURL.appendingPathComponent("\(id).json")
+        return try await Task.detached(priority: .utility) {
+            if self.fileManager.fileExists(atPath: fileURL.path) {
+                return try Data(contentsOf: fileURL)
+            }
+            return nil
+        }.value
     }
 
     public func deleteGame(id: String) async throws {
-        // TODO: Implement delete logic
-        throw NSError(domain: "GameStorageService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Not implemented"])
+        let fileURL = folderURL.appendingPathComponent("\(id).json")
+        try await Task.detached(priority: .utility) {
+            if self.fileManager.fileExists(atPath: fileURL.path) {
+                try self.fileManager.removeItem(at: fileURL)
+            }
+        }.value
     }
 }

@@ -32,11 +32,13 @@ public struct SudokuBoard: Codable, Hashable {
     public var id: String
     public var size: Int
     public var cells: [SudokuCell]
+    public var difficulty: String?
 
-    public init(id: String = UUID().uuidString, size: Int = 9, cells: [SudokuCell] = []) {
+    public init(id: String = UUID().uuidString, size: Int = 9, cells: [SudokuCell] = [], difficulty: String? = nil) {
         self.id = id
         self.size = size
         self.cells = cells
+        self.difficulty = difficulty
     }
 
     public func cellAt(row: Int, col: Int) -> SudokuCell? {
@@ -51,6 +53,6 @@ public struct SudokuBoard: Codable, Hashable {
             updated.isError = false
             newCells[idx] = updated
         }
-        return SudokuBoard(id: id, size: size, cells: newCells)
+        return SudokuBoard(id: id, size: size, cells: newCells, difficulty: difficulty)
     }
 }

@@ -41,6 +41,58 @@ public struct GameView: View {
                     }
                     .frame(height: 360)
 
+                    // Save / Load buttons
+                    HStack(spacing: 12) {
+                        Button(action: {
+                            Task {
+                                await viewModel.saveCurrentGame()
+                            }
+                        }) {
+                            if viewModel.isSaving {
+                                ProgressView()
+                                    .frame(maxWidth: .infinity, minHeight: 44)
+                                    .background(Color(UIColor.systemGray6))
+                                    .cornerRadius(8)
+                            } else {
+                                Text("Save")
+                                    .frame(maxWidth: .infinity, minHeight: 44)
+                                    .background(Color.green)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(8)
+                            }
+                        }
+                        .disabled(viewModel.isSaving)
+
+                        Button(action: {
+                            Task {
+                                _ = await viewModel.loadSavedGame()
+                            }
+                        }) {
+                            if viewModel.isLoadingSaved {
+                                ProgressView()
+                                    .frame(maxWidth: .infinity, minHeight: 44)
+                                    .background(Color(UIColor.systemGray6))
+                                    .cornerRadius(8)
+                            } else {
+                                Text("Load Saved")
+                                    .frame(maxWidth: .infinity, minHeight: 44)
+                                    .background(Color.orange)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(8)
+                            }
+                        }
+                        .disabled(viewModel.isLoadingSaved)
+                    }
+                    .padding(.horizontal)
+
+                    // Show save/load messages
+                    if let msg = viewModel.saveMessage {
+                        Text(msg).foregroundColor(.green).font(.caption)
+                    }
+                    if let lmsg = viewModel.loadMessage {
+                        Text(lmsg).foregroundColor(.red).font(.caption)
+                    }
+
                     // Numeric keyboard
                     VStack(spacing: 8) {
                         ForEach(0..<3) { row in
