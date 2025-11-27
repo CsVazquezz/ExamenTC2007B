@@ -78,6 +78,30 @@ public struct HomeView: View {
                 }
                 .disabled(viewModel.isLoading)
 
+                Button(action: {
+                    Task {
+                        do {
+                            if let saved = try await viewModel.repositoryProvider.loadGame(id: "last_game") {
+                                let validator = SudokuValidator()
+                                let gvm = GameViewModel(repository: viewModel.repositoryProvider, validator: validator)
+                                gvm.board = saved
+                                self.gameViewModel = gvm
+                                self.navigateToGame = true
+                            } else {
+                                errorMessage = "No saved game available"
+                            }
+                        } catch {
+                            errorMessage = "Failed to load saved game: \(error.localizedDescription)"
+                        }
+                    }
+                }) {
+                    Text("Resume Saved Game")
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .background(Color(UIColor.systemGray5))
+                        .cornerRadius(8)
+                        .padding(.horizontal)
+                }
+
                 if let err = errorMessage {
                     Text(err).foregroundColor(.red).multilineTextAlignment(.center)
                 }
@@ -96,9 +120,6 @@ public struct HomeView: View {
             }
             .navigationTitle("Sudoku")
             .padding()
-            .onAppear {
-                print("[HomeView] appeared - difficulty=\(viewModel.selectedDifficulty)")
-            }
         }
     }
 }
