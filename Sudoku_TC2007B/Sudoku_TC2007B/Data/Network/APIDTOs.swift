@@ -9,14 +9,37 @@ import Foundation
 
 // DTOs for API responses
 
-public struct APIPuzzleDTO: Codable {
-    public let puzzle: [String]? // API may return different shapes; keep flexible
-    public let solution: [String]?
-    public let difficulty: String?
+public struct SudokuResponseDTO: Codable {
+    // The API returns a matrix where empty cells are null -> use [[Int?]]
+    public let puzzle: [[Int?]]?
+    public let solution: [[Int?]]?
 
-    public init(puzzle: [String]? = nil, solution: [String]? = nil, difficulty: String? = nil) {
+    enum CodingKeys: String, CodingKey {
+        case puzzle
+        case solution
+        case newboard
+    }
+
+    public init(puzzle: [[Int?]]? = nil, solution: [[Int?]]? = nil) {
         self.puzzle = puzzle
         self.solution = solution
-        self.difficulty = difficulty
+    }
+
+    public nonisolated init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if let p = try? container.decode([[Int?]].self, forKey: .puzzle) {
+            self.puzzle = p
+        } else if let p = try? container.decode([[Int?]].self, forKey: .newboard) {
+            self.puzzle = p
+        } else {
+            self.puzzle = nil
+        }
+        self.solution = try? container.decodeIfPresent([[Int?]].self, forKey: .solution)
+    }
+
+    public nonisolated func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(puzzle, forKey: .puzzle)
+        try container.encodeIfPresent(solution, forKey: .solution)
     }
 }

@@ -8,9 +8,8 @@ struct SudokuApp: App {
     private let repository: SudokuRepository
 
     init() {
-        // TODO: Replace with secure retrieval of API key (e.g., from env or secrets)
-        let apiKey = "YOUR_API_KEY_HERE"
-        self.apiService = SudokuAPIService(apiKey: apiKey)
+        // Use the default API key configured in SudokuAPIService initializer
+        self.apiService = SudokuAPIService()
         self.storageService = GameStorageService()
         self.repository = SudokuRepository(apiService: apiService, storageService: storageService)
     }

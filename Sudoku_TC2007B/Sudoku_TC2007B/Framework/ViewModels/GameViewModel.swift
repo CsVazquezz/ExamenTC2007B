@@ -20,6 +20,8 @@ public class GameViewModel: ObservableObject {
     }
 
     @Published public private(set) var state: State = .idle
+    @Published public var board: SudokuBoard? = nil
+    @Published public var selectedCellID: UUID? = nil
 
     private let repository: SudokuRepositoryProtocol
     private let validator: SudokuValidatorProtocol
@@ -30,7 +32,35 @@ public class GameViewModel: ObservableObject {
     }
 
     public func loadNewPuzzle(difficulty: String) async {
-        // TODO: call repository.getPuzzle(difficulty:) and update state
+        self.state = .loading
+        do {
+            let board = try await repository.getPuzzle(difficulty: difficulty)
+            self.board = board
+            self.state = .success(board)
+        } catch {
+            self.state = .error(error)
+        }
+    }
+
+    public func cellSelected(_ cell: SudokuCell) {
+        // only allow selection of non-given cells
+        guard !cell.isGiven else { return }
+        self.selectedCellID = cell.id
+    }
+
+    public func numberEntered(_ number: Int) {
+        guard var currentBoard = board, let selectedID = selectedCellID else { return }
+        guard let selectedCell = currentBoard.cells.first(where: { $0.id == selectedID }) else { return }
+        // ignore changes to given cells
+        if selectedCell.isGiven { return }
+
+        // treat 0 as delete
+        let newValue: Int? = (number == 0) ? nil : number
+
+        // create updated board immutably
+        let newBoard = currentBoard.update(cell: selectedCell, newValue: newValue)
+        self.board = newBoard
+        self.state = .success(newBoard)
     }
 
     public func verify(board: SudokuBoard) async {

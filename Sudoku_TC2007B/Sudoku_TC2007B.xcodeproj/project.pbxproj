@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		0781A14C2ED8AF2800128F06 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 0781A14B2ED8AF2800128F06 /* Alamofire */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		0781A0DF2ED8A49100128F06 /* Sudoku_TC2007B.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sudoku_TC2007B.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0781A14C2ED8AF2800128F06 /* Alamofire in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = Sudoku_TC2007B;
 			packageProductDependencies = (
+				0781A14B2ED8AF2800128F06 /* Alamofire */,
 			);
 			productName = Sudoku_TC2007B;
 			productReference = 0781A0DF2ED8A49100128F06 /* Sudoku_TC2007B.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = 0781A0D62ED8A49100128F06;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				0781A14A2ED8AF2800128F06 /* XCRemoteSwiftPackageReference "Alamofire" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0781A0E02ED8A49100128F06 /* Products */;
 			projectDirPath = "";
@@ -332,6 +341,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		0781A14A2ED8AF2800128F06 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.10.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0781A14B2ED8AF2800128F06 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0781A14A2ED8AF2800128F06 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 0781A0D72ED8A49100128F06 /* Project object */;
 }

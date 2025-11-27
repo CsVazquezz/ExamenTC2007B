@@ -11,15 +11,20 @@ import Combine
 @MainActor
 public class HomeViewModel: ObservableObject {
     @Published public var selectedDifficulty: String = "easy"
+    @Published public var isLoading: Bool = false
 
-    private let repository: SudokuRepository
+    private let repository: SudokuRepositoryProtocol
 
-    public init(repository: SudokuRepository) {
+    public var repositoryProvider: SudokuRepositoryProtocol { repository }
+
+    public init(repository: SudokuRepositoryProtocol) {
         self.repository = repository
     }
 
     public func startGame() async throws -> SudokuBoard {
-        // TODO: call repository.getPuzzle(difficulty:)
-        throw NSError(domain: "HomeViewModel", code: -1, userInfo: [NSLocalizedDescriptionKey: "Not implemented"])
+        self.isLoading = true
+        defer { self.isLoading = false }
+        let board = try await repository.getPuzzle(difficulty: selectedDifficulty)
+        return board
     }
 }

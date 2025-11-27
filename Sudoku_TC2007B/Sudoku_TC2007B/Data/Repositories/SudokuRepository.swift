@@ -20,8 +20,50 @@ public final class SudokuRepository: SudokuRepositoryProtocol {
     }
 
     public func getPuzzle(difficulty: String) async throws -> SudokuBoard {
-        // TODO: fetch from API and map to SudokuBoard
-        throw NSError(domain: "SudokuRepository", code: -1, userInfo: [NSLocalizedDescriptionKey: "Not implemented"])
+        // The external API expects subgrid dimensions (width/height) between 2 and 4.
+        // For a standard 9x9 Sudoku, pass width=3 and height=3 (3x3 subgrids -> 9x9 board).
+        let subgridWidth = 3
+        let subgridHeight = 3
+        let size = subgridWidth * subgridHeight // 9
+
+        let dto = try await apiService.fetchSudoku(difficulty: difficulty, width: subgridWidth, height: subgridHeight)
+
+        // Prefer dto.puzzle
+        guard let matrix = dto.puzzle else {
+            throw NSError(domain: "SudokuRepository", code: -1, userInfo: [NSLocalizedDescriptionKey: "API returned no puzzle data"])
+        }
+
+        // Map returned matrix to cells. Be tolerant of shapes: if rows/cols differ from expected size, adapt.
+        var cells: [SudokuCell] = []
+        for (r, row) in matrix.enumerated() {
+            for (c, valueOpt) in row.enumerated() {
+                // API may return null for empty cells; also handle 0 as empty
+                let cellValue: Int?
+                let isGiven: Bool
+                if let v = valueOpt, v != 0 {
+                    cellValue = v
+                    isGiven = true
+                } else {
+                    cellValue = nil
+                    isGiven = false
+                }
+                let cell = SudokuCell(row: r, col: c, value: cellValue, isGiven: isGiven, isError: false)
+                cells.append(cell)
+            }
+        }
+
+        // If API returned a different shape (e.g., flattened), handle fallback to create an empty 9x9 board
+        if cells.isEmpty {
+            // fallback: create empty board of size `size`
+            for r in 0..<size {
+                for c in 0..<size {
+                    cells.append(SudokuCell(row: r, col: c, value: nil, isGiven: false))
+                }
+            }
+        }
+
+        let board = SudokuBoard(size: size, cells: cells)
+        return board
     }
 
     public func saveGame(id: String, board: SudokuBoard) async throws {
